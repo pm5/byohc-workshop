@@ -1,18 +1,17 @@
 package lambda
 
-import (
-	"encoding/json"
-	"fmt"
-)
+import "fmt"
 
-type Node interface{}
+type Node interface {
+	Sub(name string, value Node) Node
+}
 
 type Var struct {
 	Name string
 }
 
 type Lambda struct {
-	Argument Node
+	Argument string
 	Body     Node
 }
 
@@ -21,49 +20,79 @@ type App struct {
 	Argument Node
 }
 
-func NewVar(nodes []interface{}) *Var {
-	return &Var{nodes[1].(string)}
+func NewVar(name string) *Var {
+	return &Var{name}
 }
 
-func (n Var) String() string {
-	return fmt.Sprintf("[var %s]", n.Name)
+func (self Var) String() string {
+	return fmt.Sprintf("%s", self.Name)
 }
 
-func NewLambda(nodes []interface{}) *Lambda {
-	return &Lambda{NewNode(nodes[1].([]interface{})), NewNode(nodes[2].([]interface{}))}
+func (self Var) Sub(name string, value Node) Node {
+	if self.Name == name {
+		return value
+	} else {
+		return self
+	}
 }
 
-func (n Lambda) String() string {
-	return fmt.Sprintf("[lam %s %s]", n.Argument, n.Body)
+func NewLambda(arg string, body Node) *Lambda {
+	return &Lambda{arg, body}
 }
 
-func NewApp(nodes []interface{}) *App {
-	return &App{NewNode(nodes[1].([]interface{})), NewNode(nodes[2].([]interface{}))}
+func (self Lambda) String() string {
+	return fmt.Sprintf("(\\%s %s)", self.Argument, self.Body)
 }
 
-func (n App) String() string {
-	return fmt.Sprintf("[app %s %s]", n.Func, n.Argument)
+func (self Lambda) Sub(name string, value Node) Node {
+	if self.Argument != name {
+		self.Body = self.Body.Sub(name, value)
+	}
+	return self
+}
+
+func (self Lambda) Eval(arg Node) Node {
+	return self.Body.Sub(self.Argument, arg)
+}
+
+func NewApp(f Node, arg Node) *App {
+	return &App{f, arg}
+}
+
+func (self App) String() string {
+	return fmt.Sprintf("%s %s", self.Func, self.Argument)
+}
+
+func (self App) Sub(name string, value Node) Node {
+	self.Func = self.Func.Sub(name, value)
+	self.Argument = self.Argument.Sub(name, value)
+	return self
+}
+
+func (self App) Eval() Node {
+	return self.Func.(*Lambda).Eval(self.Argument)
 }
 
 func NewNode(nodes []interface{}) Node {
 	switch nodes[0].(string) {
 	case "var":
-		return NewVar(nodes)
+		return NewVar(nodes[1].(string))
 	case "lam":
-		return NewLambda(nodes)
+		return NewLambda(nodes[1].(string), NewNode(nodes[2].([]interface{})))
 	case "app":
-		return NewApp(nodes)
+		return NewApp(NewNode(nodes[1].([]interface{})), NewNode(nodes[2].([]interface{})))
 	}
 	return nil
 }
 
-func Test() {
-	var expr []interface{}
-	err := json.Unmarshal([]byte(`["app",["lam","true",["app",["lam","false",["app",["lam","and",["app",["app",["var","and"],["var","true"]],["var","true"]]],["lam","a",["lam","b",["app",["app",["var","a"],["var","b"]],["var","false"]]]]]],["lam","a",["lam","b",["var","b"]]]]],["lam","a",["lam","b",["var","a"]]]]`), &expr)
-	if err != nil {
-		fmt.Print(err)
+func Eval(node Node) Node {
+	for {
+		fmt.Printf("%s\n", node)
+		switch node.(type) {
+		default:
+			return node
+		case *App:
+			node = node.(*App).Eval()
+		}
 	}
-	fmt.Printf("%s", expr)
-	n := NewNode(expr)
-	fmt.Printf("%s", n)
 }
