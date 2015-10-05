@@ -20,8 +20,8 @@ type App struct {
 	Argument Node
 }
 
-func NewVar(name string) *Var {
-	return &Var{name}
+func NewVar(name string) Var {
+	return Var{name}
 }
 
 func (self Var) String() string {
@@ -36,8 +36,8 @@ func (self Var) Sub(name string, value Node) Node {
 	}
 }
 
-func NewLambda(arg string, body Node) *Lambda {
-	return &Lambda{arg, body}
+func NewLambda(arg string, body Node) Lambda {
+	return Lambda{arg, body}
 }
 
 func (self Lambda) String() string {
@@ -55,8 +55,8 @@ func (self Lambda) Eval(arg Node) Node {
 	return self.Body.Sub(self.Argument, arg)
 }
 
-func NewApp(f Node, arg Node) *App {
-	return &App{f, arg}
+func NewApp(f Node, arg Node) App {
+	return App{f, arg}
 }
 
 func (self App) String() string {
@@ -70,7 +70,7 @@ func (self App) Sub(name string, value Node) Node {
 }
 
 func (self App) Eval() Node {
-	return self.Func.(*Lambda).Eval(self.Argument)
+	return self.Func.(Lambda).Eval(self.Argument)
 }
 
 func NewNode(nodes []interface{}) Node {
@@ -91,8 +91,8 @@ func Eval(node Node) Node {
 		switch node.(type) {
 		default:
 			return node
-		case *App:
-			node = node.(*App).Eval()
+		case App:
+			node = node.(App).Eval()
 		}
 	}
 }
