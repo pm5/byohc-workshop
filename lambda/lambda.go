@@ -104,3 +104,23 @@ func WeakNormalForm(node Node) Node {
 		return WeakNormalForm(r.Body.Sub(r.Argument, node.(App).Argument))
 	}
 }
+
+func NormalForm(node Node) Node {
+	var r Node
+	switch node := node.(type) {
+	default:
+		return nil
+	case Var:
+		return node
+	case Lambda:
+		return NewLambda(node.Argument, NormalForm(node.Body))
+	case App:
+		r = WeakNormalForm(node.Func)
+	}
+	switch r := r.(type) {
+	default:
+		return NewApp(NormalForm(node.(App).Func), NormalForm(node.(App).Argument))
+	case Lambda:
+		return NormalForm(r.Body.Sub(r.Argument, node.(App).Argument))
+	}
+}
