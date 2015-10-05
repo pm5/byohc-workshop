@@ -80,3 +80,15 @@ func TestNormalForm(t *testing.T) {
 		t.Errorf("Incorrect evaluation `%s`", r)
 	}
 }
+
+func TestBooleanNot(t *testing.T) {
+	var expr []interface{}
+	err := json.Unmarshal([]byte(`["app",["lam","true",["app",["lam","false",["app",["lam","not",["app",["var","not"],["var","true"]]],["lam","p",["lam","a",["lam","b",["app",["app",["var","p"],["var","b"]],["var","a"]]]]]]],["lam","a",["lam","b",["var","b"]]]]],["lam","a",["lam","b",["var","a"]]]]`), &expr)
+	if err != nil {
+		t.Error(err)
+	}
+	n := NewNode(expr)
+	if r := NormalForm(n); fmt.Sprintf("%s", r) != `(\a (\b b))` {
+		t.Errorf("Incorrect evaluation `%s`", r)
+	}
+}
