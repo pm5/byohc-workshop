@@ -85,14 +85,22 @@ func NewNode(nodes []interface{}) Node {
 	return nil
 }
 
-func Eval(node Node) Node {
-	for {
-		fmt.Printf("%s\n", node)
-		switch node.(type) {
-		default:
-			return node
-		case App:
-			node = node.(App).Eval()
-		}
+func WeakNormalForm(node Node) Node {
+	var r Node
+	switch node := node.(type) {
+	default:
+		return nil
+	case Var:
+		return node
+	case Lambda:
+		return node
+	case App:
+		r = WeakNormalForm(node.Func)
+	}
+	switch r := r.(type) {
+	default:
+		return node
+	case Lambda:
+		return WeakNormalForm(r.Body.Sub(r.Argument, node.(App).Argument))
 	}
 }

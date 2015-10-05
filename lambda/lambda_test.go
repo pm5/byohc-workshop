@@ -57,14 +57,14 @@ func TestAppEval(t *testing.T) {
 	}
 }
 
-//func TestSampleEval(t *testing.T) {
-//var expr []interface{}
-//err := json.Unmarshal([]byte(`["app",["lam","true",["app",["lam","false",["app",["lam","and",["app",["app",["var","and"],["var","true"]],["var","true"]]],["lam","a",["lam","b",["app",["app",["var","a"],["var","b"]],["var","false"]]]]]],["lam","a",["lam","b",["var","b"]]]]],["lam","a",["lam","b",["var","a"]]]]`), &expr)
-//if err != nil {
-//t.Error(err)
-//}
-//n := NewNode(expr)
-//if r := Eval(n); fmt.Sprintf("%s", r) != `(\a (\b a))` {
-//t.Errorf("Incorrect evaluation `%s`", r)
-//}
-//}
+func TestWeakNormalForm(t *testing.T) {
+	var expr []interface{}
+	err := json.Unmarshal([]byte(`["app",["lam","true",["app",["lam","false",["app",["lam","and",["app",["app",["var","and"],["var","true"]],["var","true"]]],["lam","a",["lam","b",["app",["app",["var","a"],["var","b"]],["var","false"]]]]]],["lam","a",["lam","b",["var","b"]]]]],["lam","a",["lam","b",["var","a"]]]]`), &expr)
+	if err != nil {
+		t.Error(err)
+	}
+	n := NewNode(expr)
+	if r := WeakNormalForm(n); fmt.Sprintf("%s", r) != `(\a (\b a))` {
+		t.Errorf("Incorrect evaluation `%s`", r)
+	}
+}
