@@ -4,6 +4,7 @@ import "fmt"
 
 type Node interface {
 	Sub(name string, value Node) Node
+	FreeVar() []string
 }
 
 type Var struct {
@@ -36,6 +37,10 @@ func (self Var) Sub(name string, value Node) Node {
 	}
 }
 
+func (self Var) FreeVar() []string {
+	return []string{self.Name}
+}
+
 func NewLambda(arg string, body Node) Lambda {
 	return Lambda{arg, body}
 }
@@ -46,9 +51,34 @@ func (self Lambda) String() string {
 
 func (self Lambda) Sub(name string, value Node) Node {
 	if self.Argument != name {
+		freeVar := value.FreeVar()
+		varMap := make(map[string]bool)
+		for i := 0; i < len(freeVar); i++ {
+			varMap[freeVar[i]] = true
+		}
+		if _, exists := varMap[self.Argument]; exists {
+			freeVar = append(freeVar, self.Body.FreeVar()...)
+			for i := 0; i < len(freeVar); i++ {
+				varMap[freeVar[i]] = true
+			}
+			m := "m"
+			for {
+				if _, exists := varMap[m]; exists || m == name {
+					m = m + "_"
+				} else {
+					break
+				}
+			}
+			self.Body = self.Body.Sub(self.Argument, NewVar(m))
+			self.Argument = m
+		}
 		self.Body = self.Body.Sub(name, value)
 	}
 	return self
+}
+
+func (self Lambda) FreeVar() []string {
+	return append(self.Body.FreeVar(), self.Argument)
 }
 
 func (self Lambda) Eval(arg Node) Node {
@@ -67,6 +97,10 @@ func (self App) Sub(name string, value Node) Node {
 	self.Func = self.Func.Sub(name, value)
 	self.Argument = self.Argument.Sub(name, value)
 	return self
+}
+
+func (self App) FreeVar() []string {
+	return append(self.Func.FreeVar(), self.Argument.FreeVar()...)
 }
 
 func (self App) Eval() Node {

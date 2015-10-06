@@ -88,7 +88,7 @@ func TestBooleanNot(t *testing.T) {
 		t.Error(err)
 	}
 	n := NewNode(expr)
-	if r := NormalForm(n); fmt.Sprintf("%s", r) != `(\a (\b b))` {
+	if r := NormalForm(n); fmt.Sprintf("%s", r) != `(\m__ (\m_ m_))` {
 		t.Errorf("Incorrect evaluation `%s`", r)
 	}
 }
