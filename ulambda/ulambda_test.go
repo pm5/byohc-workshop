@@ -44,20 +44,6 @@ func TestLambdaSubScope(t *testing.T) {
 }
 */
 
-func TestLambdaEval(t *testing.T) {
-	lam := NewLambda("a", NewVar("a"))
-	if r := lam.Eval(NewVar("c")); r.(Var).Name != "c" {
-		t.Errorf("Lambda.Eval() evaluates wrong: `%s`", r)
-	}
-}
-
-func TestAppEval(t *testing.T) {
-	app := NewApp(NewLambda("a", NewVar("a")), NewVar("c"))
-	if r := app.Eval(); r.(Var).Name != "c" {
-		t.Errorf("App.Eval() evaluates wrong: `%s`", r)
-	}
-}
-
 func TestWeakNormalForm(t *testing.T) {
 	var expr []interface{}
 	if err := json.Unmarshal([]byte(`["app",["lam","true",["app",["lam","false",["app",["lam","and",["app",["app",["var","and"],["var","true"]],["var","true"]]],["lam","a",["lam","b",["app",["app",["var","a"],["var","b"]],["var","false"]]]]]],["lam","a",["lam","b",["var","b"]]]]],["lam","a",["lam","b",["var","a"]]]]`), &expr); err != nil {
