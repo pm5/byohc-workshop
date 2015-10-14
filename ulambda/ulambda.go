@@ -1,10 +1,11 @@
-package lambda
+package ulambda
 
 import "fmt"
 
 type Node interface {
 	Sub(name string, value Node) Node
 	FreeVar() []string
+	String() string
 }
 
 type Var struct {

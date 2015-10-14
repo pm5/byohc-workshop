@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"./lambda"
+	"../../ulambda"
 )
 
 func main() {
@@ -14,6 +14,6 @@ func main() {
 	if err != nil {
 		fmt.Print(err)
 	}
-	n := lambda.NewNode(expr)
+	n := ulambda.NewNode(expr)
 	fmt.Printf("%s\n", n)
 }
