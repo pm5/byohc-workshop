@@ -1,8 +1,13 @@
 package ulambda
 
 import (
+	"errors"
 	"regexp"
 	"strings"
+)
+
+var (
+	ErrUnknown = errors.New("ulambda: unknown error")
 )
 
 func replaceParenth(s string) string {
@@ -16,18 +21,30 @@ func lexer(s string) []string {
 	return strings.Split(replaceParenth(s), " ")
 }
 
-func ParseLex(lex []string) Node {
+func ParseLex(lex []string) (Node, error) {
 	n := lex[0]
 	if n[0] == '\\' {
-		return NewLambda(n[1:], ParseLex(lex[1:]))
+		c, err := ParseLex(lex[1:])
+		if err != nil {
+			return nil, err
+		}
+		return NewLambda(n[1:], c), nil
 	} else if len(lex) == 1 {
-		return NewVar(n)
+		return NewVar(n), nil
 	} else {
-		return NewApp(ParseLex(lex[0:1]), ParseLex(lex[1:]))
+		f, err := ParseLex(lex[0:1])
+		if err != nil {
+			return nil, err
+		}
+		a, err := ParseLex(lex[1:])
+		if err != nil {
+			return nil, err
+		}
+		return NewApp(f, a), nil
 	}
-	// raise err
+	return nil, ErrUnknown
 }
 
-func ParseExpr(expr string) Node {
+func ParseExpr(expr string) (Node, error) {
 	return ParseLex(lexer(expr))
 }
