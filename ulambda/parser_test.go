@@ -5,16 +5,6 @@ import (
 	"testing"
 )
 
-func TestParseExprVar(t *testing.T) {
-	n, err := ParseExpr(`a`)
-	if err != nil {
-		t.Errorf("Parse Var wrong: %s", err)
-	}
-	if n.(Var).Name != "a" {
-		t.Errorf("Parse Var wrong: %s", n)
-	}
-}
-
 func TestReplaceParenth(t *testing.T) {
 	if s := replaceParenth(`(\a b c)(d e)`); s != `( \a b c ) ( d e )` {
 		t.Errorf("Replace parentheses wrong: %s", s)
@@ -28,21 +18,30 @@ func TestLexer(t *testing.T) {
 	}
 }
 
+func TestParseExprVar(t *testing.T) {
+	n, err := ParseExpr(`a`)
+	if err != nil {
+		t.Errorf("Parse Var wrong: %s", err)
+	}
+	if n.Type != "var" || n.Name != "a" {
+		t.Errorf("Parse Var wrong: %s", n)
+	}
+}
+
 func TestParseExprLambda(t *testing.T) {
-	n1, err := ParseExpr(`\a a`)
+	n1, err := ParseExpr(`(\a a)`)
 	if err != nil {
 		t.Errorf("Parse Lambda wrong: %s", err)
 	}
-	if n1.(Lambda).Argument != "a" || n1.(Lambda).Body.(Var).Name != "a" {
+	if n1.Type != "lambda" || n1.Argument != "a" || n1.Children[0].Type != "var" || n1.Children[0].Name != "a" {
 		t.Errorf("Parse Lambda wrong: %s", n1)
 	}
 
-	n2, err := ParseExpr(`\a b a`)
+	n2, err := ParseExpr(`(\a b a)`)
 	if err != nil {
 		t.Errorf("Parse Lambda wrong: %s", err)
 	}
-	if n2.(Lambda).Body.(App).Func.(Var).Name != "b" ||
-		n2.(Lambda).Body.(App).Argument.(Var).Name != "a" {
+	if n2.Type != "lambda" || n2.Children[0].Type != "app" || n2.Children[0].Children[0].Name != "b" || n2.Children[0].Children[1].Name != "a" {
 		t.Errorf("Parse Lambda wrong: %s", n2)
 	}
 }
@@ -52,7 +51,7 @@ func TestParseExprApp(t *testing.T) {
 	if err != nil {
 		t.Errorf("Parse App wrong: %s", err)
 	}
-	if n1.(App).Func.(Var).Name != "a" || n1.(App).Argument.(Var).Name != "b" {
+	if n1.Type != "app" || n1.Children[0].Type != "var" || n1.Children[0].Name != "a" || n1.Children[1].Type != "var" || n1.Children[1].Name != "b" {
 		t.Errorf("Parse App wrong: %s", n1)
 	}
 
@@ -60,20 +59,28 @@ func TestParseExprApp(t *testing.T) {
 	if err != nil {
 		t.Errorf("Parse App wrong: %s", err)
 	}
-	if n2.(App).Func.(Var).Name != "a" || n2.(App).Argument.(App).Func.(Var).Name != "b" {
+	if n2.Children[1].Type != "app" || n2.Children[1].Children[0].Name != "b" || n2.Children[1].Children[1].Name != "c" {
 		t.Errorf("Parse App wrong: %s", n2)
+	}
+
+	n3, err := ParseExpr(`(\a b a) foo`)
+	if err != nil {
+		t.Errorf("Parse Lambda wrong: %s", err)
+	}
+	if n3.Type != "app" || n3.Children[0].Type != "lambda" {
+		t.Errorf("Parse Lambda wrong: %s", n3)
 	}
 }
 
-//func TestParseExprComposit(t *testing.T) {
-//n, err := ParseExpr(`(\y (\x y x)(+ 3 2))(\z (* z z))`)
-//if err != nil {
-//t.Errorf("Parse composit expression wrong: %s", err)
-//}
-//if n.(App).Func.(Lambda).Argument != "y" {
-//t.Errorf("Parse composit expression wrong: %s", n)
-//}
-//}
+func TestParseExprComplex(t *testing.T) {
+	n1, err := ParseExpr(`(\y (\x y x)(\a a b))(\z (\z y z))`)
+	if err != nil {
+		t.Errorf("Parse complex expression wrong: %s", err)
+	}
+	if n1.Type != "app" || n1.Children[0].Type != "lambda" || n1.Children[1].Type != "lambda" || n1.Children[0].Children[0].Type != "app" {
+		t.Errorf("Parse complex expression wrong: %s", n1)
+	}
+}
 
 //func TestParseExprBooleanAnd(t *testing.T) {
 //n := ParseExpr(`(\true

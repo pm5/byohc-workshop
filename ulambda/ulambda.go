@@ -100,14 +100,14 @@ func (self App) FreeVar() []string {
 	return append(self.Func.FreeVar(), self.Argument.FreeVar()...)
 }
 
-func NewNode(nodes []interface{}) Node {
-	switch nodes[0].(string) {
+func NewNode(expr *ASTNode) Node {
+	switch expr.Type {
 	case "var":
-		return NewVar(nodes[1].(string))
-	case "lam":
-		return NewLambda(nodes[1].(string), NewNode(nodes[2].([]interface{})))
+		return NewVar(expr.Name)
+	case "lambda":
+		return NewLambda(expr.Argument, NewNode(expr.Children[0]))
 	case "app":
-		return NewApp(NewNode(nodes[1].([]interface{})), NewNode(nodes[2].([]interface{})))
+		return NewApp(NewNode(expr.Children[0]), NewNode(expr.Children[1]))
 	}
 	return nil
 }

@@ -7,8 +7,30 @@ import (
 )
 
 var (
-	ErrUnknown = errors.New("ulambda: unknown error")
+	ErrUnknown   = errors.New("ulambda: unknown error")
+	ErrUnmatched = errors.New("unknown: unmatched parentheses")
+	ErrEmptyExpr = errors.New("unknown: empty expression")
+	ErrSyntax    = errors.New("ulambda: syntax error")
 )
+
+type ASTNode struct {
+	Type     string
+	Name     string // for var type
+	Argument string // for lambda type
+	Children []*ASTNode
+}
+
+func NewVarASTNode(name string) *ASTNode {
+	return &ASTNode{"var", name, "", nil}
+}
+
+func NewLambdaASTNode(arg string, body *ASTNode) *ASTNode {
+	return &ASTNode{"lambda", "", arg, []*ASTNode{body}}
+}
+
+func NewAppASTNode(fun *ASTNode, arg *ASTNode) *ASTNode {
+	return &ASTNode{"app", "", "", []*ASTNode{fun, arg}}
+}
 
 func replaceParenth(s string) string {
 	pr := regexp.MustCompile(`([\(\)])`)
@@ -21,30 +43,58 @@ func lexer(s string) []string {
 	return strings.Split(replaceParenth(s), " ")
 }
 
-func ParseLex(lex []string) (Node, error) {
-	n := lex[0]
-	if n[0] == '\\' {
-		c, err := ParseLex(lex[1:])
+func ParseLex(lex []string) (*ASTNode, error) {
+	if len(lex) == 0 {
+		return nil, ErrEmptyExpr
+	}
+	if lex[0] == "(" {
+		if lex[1][0] != '\\' {
+			return nil, ErrSyntax
+		}
+		i := 1
+		count := 1
+		for ; i < len(lex) && count > 0; i++ {
+			if lex[i] == "(" {
+				count++
+			} else if lex[i] == ")" {
+				count--
+			}
+		}
+		if count > 0 {
+			return nil, ErrUnmatched
+		} else {
+			i--
+		}
+		body, err := ParseLex(lex[2:i])
 		if err != nil {
 			return nil, err
 		}
-		return NewLambda(n[1:], c), nil
-	} else if len(lex) == 1 {
-		return NewVar(n), nil
+		if i == len(lex)-1 {
+			return NewLambdaASTNode(lex[1][1:], body), nil
+		} else {
+			arg, err := ParseLex(lex[i+1:])
+			if err != nil {
+				return nil, err
+			}
+			return NewAppASTNode(NewLambdaASTNode(lex[1][1:], body), arg), nil
+		}
+	}
+	if len(lex) == 1 {
+		return NewVarASTNode(lex[0]), nil
 	} else {
-		f, err := ParseLex(lex[0:1])
+		fun, err := ParseLex(lex[0:1])
 		if err != nil {
 			return nil, err
 		}
-		a, err := ParseLex(lex[1:])
+		arg, err := ParseLex(lex[1:])
 		if err != nil {
 			return nil, err
 		}
-		return NewApp(f, a), nil
+		return NewAppASTNode(fun, arg), nil
 	}
 	return nil, ErrUnknown
 }
 
-func ParseExpr(expr string) (Node, error) {
+func ParseExpr(expr string) (*ASTNode, error) {
 	return ParseLex(lexer(expr))
 }
