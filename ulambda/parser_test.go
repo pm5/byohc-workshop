@@ -29,7 +29,7 @@ func TestParseExprVar(t *testing.T) {
 }
 
 func TestParseExprLambda(t *testing.T) {
-	n1, err := ParseExpr(`(\a a)`)
+	n1, err := ParseExpr(`\a a`)
 	if err != nil {
 		t.Errorf("Parse Lambda wrong: %s", err)
 	}
@@ -37,12 +37,20 @@ func TestParseExprLambda(t *testing.T) {
 		t.Errorf("Parse Lambda wrong: %s", n1)
 	}
 
-	n2, err := ParseExpr(`(\a b a)`)
+	n2, err := ParseExpr(`\a b a`)
 	if err != nil {
 		t.Errorf("Parse Lambda wrong: %s", err)
 	}
 	if n2.Type != "lambda" || n2.Children[0].Type != "app" || n2.Children[0].Children[0].Name != "b" || n2.Children[0].Children[1].Name != "a" {
 		t.Errorf("Parse Lambda wrong: %s", n2)
+	}
+
+	n3, err := ParseExpr(`\a \b a`)
+	if err != nil {
+		t.Errorf("Parse Lambda wrong: %s", err)
+	}
+	if n3.Type != "lambda" || n3.Children[0].Type != "lambda" || n3.Children[0].Argument != "b" || n3.Children[0].Children[0].Name != "a" {
+		t.Errorf("Parse Lambda wrong: %s", n3)
 	}
 }
 
@@ -67,13 +75,13 @@ func TestParseExprApp(t *testing.T) {
 	if err != nil {
 		t.Errorf("Parse Lambda wrong: %s", err)
 	}
-	if n3.Type != "app" || n3.Children[0].Type != "lambda" {
+	if n3.Type != "app" || n3.Children[0].Type != "lambda" || n3.Children[0].Children[0].Type != "app" {
 		t.Errorf("Parse Lambda wrong: %s", n3)
 	}
 }
 
 func TestParseExprComplex(t *testing.T) {
-	n1, err := ParseExpr(`(\y (\x y x)(\a a b))(\z (\z y z))`)
+	n1, err := ParseExpr(`(\y (\x y x)(\a \b b))(\z \t t z)`)
 	if err != nil {
 		t.Errorf("Parse complex expression wrong: %s", err)
 	}

@@ -48,9 +48,6 @@ func ParseLex(lex []string) (*ASTNode, error) {
 		return nil, ErrEmptyExpr
 	}
 	if lex[0] == "(" {
-		if lex[1][0] != '\\' {
-			return nil, ErrSyntax
-		}
 		i := 1
 		count := 1
 		for ; i < len(lex) && count > 0; i++ {
@@ -81,6 +78,12 @@ func ParseLex(lex []string) (*ASTNode, error) {
 	}
 	if len(lex) == 1 {
 		return NewVarASTNode(lex[0]), nil
+	} else if lex[0][0] == '\\' {
+		body, err := ParseLex(lex[1:])
+		if err != nil {
+			return nil, err
+		}
+		return NewLambdaASTNode(lex[0][1:], body), nil
 	} else {
 		fun, err := ParseLex(lex[0:1])
 		if err != nil {
