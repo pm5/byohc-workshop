@@ -56,6 +56,31 @@ func TestLambdaSubScope(t *testing.T) {
 //t.Errorf("Alpha conversion wrong: %s", alpha)
 //}
 //}
+func TestAlphaConversion(t *testing.T) {
+	expr, err := ParseExpr(`\x y y y x`)
+	if err != nil {
+		t.Error(err)
+	}
+	n := NewNode(expr)
+	if alpha := AlphaConv(n); alpha.String() != `\0 1 1 1 0` {
+		t.Errorf("Alpha conversion wrong: %s", alpha)
+	}
+}
+
+func TestRestoreAlpha(t *testing.T) {
+
+}
+
+func TestWeakNormalForm(t *testing.T) {
+	expr, err := ParseExpr(`(\true (\false (\and (and true) true)(\a \b (a b) false))(\a \b b))(\a \b a)`)
+	if err != nil {
+		t.Error(err)
+	}
+	n := NewNode(expr)
+	if r := WeakNormalForm(n); r.String() != `(\a (\b a))` {
+		t.Errorf("WeakNormalForm wrong: `%s`", r)
+	}
+}
 
 func TestWeakNormalForm(t *testing.T) {
 	expr, err := ParseExpr(`(\true (\false (\and (and true) true)(\a \b (a b) false))(\a \b b))(\a \b a)`)

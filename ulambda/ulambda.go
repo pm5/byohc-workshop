@@ -151,3 +151,7 @@ func NormalForm(node Node) Node {
 		return NormalForm(r.Body.Sub(r.Argument, node.(App).Argument))
 	}
 }
+
+func AlphaConv(node Node) Node {
+
+}
