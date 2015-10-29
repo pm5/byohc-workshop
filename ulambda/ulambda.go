@@ -152,6 +152,24 @@ func NormalForm(node Node) Node {
 	}
 }
 
-func AlphaConv(node Node) Node {
-
+func AlphaConv(node Node, from string, to string) Node {
+	switch node := node.(type) {
+	default:
+		return nil
+	case Var:
+		if node.Name == from {
+			node.Name = to
+		}
+		return node
+	case Lambda:
+		if node.Argument == from {
+			node.Argument = to
+		}
+		node.Body = AlphaConv(node.Body, from, to)
+		return node
+	case App:
+		node.Func = AlphaConv(node.Func, from, to)
+		node.Argument = AlphaConv(node.Argument, from, to)
+		return node
+	}
 }

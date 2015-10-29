@@ -62,7 +62,7 @@ func TestAlphaConversion(t *testing.T) {
 		t.Error(err)
 	}
 	n := NewNode(expr)
-	if alpha := AlphaConv(n); alpha.String() != `\0 1 1 1 0` {
+	if alpha := AlphaConv(n, "x", "0"); alpha.String() != `(\0 y y y 0)` {
 		t.Errorf("Alpha conversion wrong: %s", alpha)
 	}
 }
