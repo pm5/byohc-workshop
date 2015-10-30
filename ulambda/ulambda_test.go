@@ -57,12 +57,12 @@ func TestLambdaSubScope(t *testing.T) {
 //}
 //}
 func TestAlphaConversion(t *testing.T) {
-	expr, err := ParseExpr(`\x y y y x`)
+	expr, err := ParseExpr(`\x y \y y x`)
 	if err != nil {
 		t.Error(err)
 	}
 	n := NewNode(expr)
-	if alpha := AlphaConv(n, "x", "0"); alpha.String() != `(\0 y y y 0)` {
+	if alpha := AlphaConv(n, "x", "0"); alpha.String() != `(\0 y (\y y 0))` {
 		t.Errorf("Alpha conversion wrong: %s", alpha)
 	}
 }
