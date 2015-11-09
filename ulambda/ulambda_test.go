@@ -83,6 +83,7 @@ func TestWeakNormalForm(t *testing.T) {
 }
 
 func TestWeakNormalForm(t *testing.T) {
+
 	expr, err := ParseExpr(`(\true (\false (\and (and true) true)(\a \b (a b) false))(\a \b b))(\a \b a)`)
 	if err != nil {
 		t.Error(err)
