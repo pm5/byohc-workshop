@@ -1,15 +1,17 @@
 
-BIN=json2lambda
+SRC=./ulambda
+.PHONY: all build test install tags
 
-.PHONY: all test tags
+all: test install
 
-all: $(BIN)
+build:
+	go build $(SRC)
 
 test:
-	go test ./ulambda
+	go test $(SRC)
 
-json2lambda: cmd/json2lambda/main.go
-	go build -o bin/json2lambda $<
+install:
+	go install $(SRC)
 
 tags:
 	gotags **/*.go > tags
