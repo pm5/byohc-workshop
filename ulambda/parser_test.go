@@ -90,12 +90,17 @@ func TestParseExprComplex(t *testing.T) {
 	}
 }
 
-//func TestParseExprBooleanAnd(t *testing.T) {
-//n := ParseExpr(`(\true
-//(\false
-//(\and
-//(and true) true
-//)(\a \b (a b) false)
-//)(\a \b b)
-//)(\a \b a)`)
-//}
+func TestParseExprBooleanAnd(t *testing.T) {
+	n1, err := ParseExpr(`
+	(\true
+	(\false
+	(\and
+		(and true) true
+	)(\a \b (a b) false)
+	)(\a \b b)
+	)(\a \b a)`)
+	if err != nil {
+		t.Errorf("Parse true and false wrong: %s", err)
+	}
+	t.Errorf("%s", n1)
+}

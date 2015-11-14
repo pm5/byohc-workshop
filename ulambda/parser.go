@@ -2,6 +2,7 @@ package ulambda
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -18,6 +19,18 @@ type ASTNode struct {
 	Name     string // for var type
 	Argument string // for lambda type
 	Children []*ASTNode
+}
+
+func (self ASTNode) String() string {
+	switch self.Type {
+	case "var":
+		return fmt.Sprintf("ASTNode{var, %s}", self.Name)
+	case "lambda":
+		return fmt.Sprintf("ASTNode{lambda, %s, %s}", self.Argument, self.Children)
+	case "app":
+		return fmt.Sprintf("ASTNode{app, %s, %s}", self.Children[0], self.Children[1:])
+	}
+	return ""
 }
 
 func NewVarASTNode(name string) *ASTNode {
