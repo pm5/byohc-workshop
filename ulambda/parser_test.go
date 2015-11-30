@@ -102,5 +102,7 @@ func TestParseExprBooleanAnd(t *testing.T) {
 	if err != nil {
 		t.Errorf("Parse true and false wrong: %s", err)
 	}
-	t.Errorf("%s", n1)
+	if n1.Children[0].Type != "lambda" {
+		t.Errorf("Parse boolean test expression wrong: %s", n1)
+	}
 }

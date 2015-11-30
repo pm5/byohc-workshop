@@ -52,8 +52,13 @@ func replaceParenth(s string) string {
 	return ht.ReplaceAllString(sp.ReplaceAllString(pr.ReplaceAllString(s, ` $1 `), ` `), ``)
 }
 
+func replaceWhitespace(s string) string {
+	ws := regexp.MustCompile(`[\s\n]+`)
+	return ws.ReplaceAllString(s, ` `)
+}
+
 func lexer(s string) []string {
-	return strings.Split(replaceParenth(s), " ")
+	return strings.Split(replaceParenth(replaceWhitespace(s)), " ")
 }
 
 func ParseLex(lex []string) (*ASTNode, error) {
