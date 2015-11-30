@@ -7,13 +7,15 @@ import (
 	"strings"
 )
 
+// Error codes returned by failures to parse an expression.
 var (
 	ErrUnknown   = errors.New("ulambda: unknown error")
-	ErrUnmatched = errors.New("unknown: unmatched parentheses")
-	ErrEmptyExpr = errors.New("unknown: empty expression")
+	ErrUnmatched = errors.New("ulambda: unmatched parentheses")
+	ErrEmptyExpr = errors.New("ulambda: empty expression")
 	ErrSyntax    = errors.New("ulambda: syntax error")
 )
 
+// ASTNode represents a node in the Abstract Syntax Tree.
 type ASTNode struct {
 	Type     string
 	Name     string // for var type
@@ -21,6 +23,7 @@ type ASTNode struct {
 	Children []*ASTNode
 }
 
+// String returns the string representation of the AST.
 func (self ASTNode) String() string {
 	switch self.Type {
 	case "var":
@@ -33,14 +36,17 @@ func (self ASTNode) String() string {
 	return ""
 }
 
+// NewVarASTNode creates an AST node for a variable.
 func NewVarASTNode(name string) *ASTNode {
 	return &ASTNode{"var", name, "", nil}
 }
 
+// NewLambdaASTNode creates an AST node for a function.
 func NewLambdaASTNode(arg string, body *ASTNode) *ASTNode {
 	return &ASTNode{"lambda", "", arg, []*ASTNode{body}}
 }
 
+// NewAppASTNode creates an AST node for an application expression.
 func NewAppASTNode(fun *ASTNode, arg *ASTNode) *ASTNode {
 	return &ASTNode{"app", "", "", []*ASTNode{fun, arg}}
 }
@@ -61,6 +67,7 @@ func lexer(s string) []string {
 	return strings.Split(replaceParenth(replaceWhitespace(s)), " ")
 }
 
+// ParseLex parses a sequence of string tokens into AST.
 func ParseLex(lex []string) (*ASTNode, error) {
 	if len(lex) == 0 {
 		return nil, ErrEmptyExpr
@@ -116,6 +123,7 @@ func ParseLex(lex []string) (*ASTNode, error) {
 	return nil, ErrUnknown
 }
 
+// ParseExpr parses a string of text into AST.
 func ParseExpr(expr string) (*ASTNode, error) {
 	return ParseLex(lexer(expr))
 }

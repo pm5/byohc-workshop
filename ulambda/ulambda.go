@@ -1,3 +1,6 @@
+/*
+Package ulambda implements a parser and calculator library for untyped Lambda calculus.
+*/
 package ulambda
 
 import "fmt"
