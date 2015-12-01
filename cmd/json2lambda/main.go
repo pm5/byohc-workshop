@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"../../ulambda"
+	"../ulambda"
 )
 
 func main() {
